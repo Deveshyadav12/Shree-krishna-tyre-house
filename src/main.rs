@@ -30,13 +30,13 @@ async fn main() {
         .with_state(state)
         .nest_service("/assets", ServeDir::new("public/assets"));
 
-    let address = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let port: u16 = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string()).parse().expect("PORT must be a valid number");`r`n    let address = SocketAddr::from(([0, 0, 0, 0], port));
 
     println!("==========================================");
     println!("SHRI KRISHNA TYRE HOUSE");
     println!("==========================================");
     println!("Database: PostgreSQL");
-    println!("Website: http://127.0.0.1:3000");
+    println!("Website: http://0.0.0.0:{}", port);
     println!("==========================================");
 
     let listener = tokio::net::TcpListener::bind(address)
@@ -45,3 +45,4 @@ async fn main() {
 
     axum::serve(listener, app).await.expect("Server failed");
 }
+
