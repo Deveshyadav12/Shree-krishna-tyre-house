@@ -30,7 +30,12 @@ async fn main() {
         .with_state(state)
         .nest_service("/assets", ServeDir::new("public/assets"));
 
-    let port: u16 = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string()).parse().expect("PORT must be a valid number");`r`n    let address = SocketAddr::from(([0, 0, 0, 0], port));
+    let port: u16 = std::env::var("PORT")
+        .unwrap_or_else(|_| "3000".to_string())
+        .parse()
+        .expect("PORT must be a valid number");
+
+    let address = SocketAddr::from(([0, 0, 0, 0], port));
 
     println!("==========================================");
     println!("SHRI KRISHNA TYRE HOUSE");
@@ -45,4 +50,3 @@ async fn main() {
 
     axum::serve(listener, app).await.expect("Server failed");
 }
-
