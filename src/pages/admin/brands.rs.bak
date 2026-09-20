@@ -1,0 +1,499 @@
+use axum::response::Html;
+
+use super::layout::admin_page;
+
+pub async fn brands() -> Html<String> {
+    let content = r#"
+
+<section class="admin-page">
+
+    <div class="admin-page-header">
+
+        <div>
+            <span class="admin-eyebrow">CATALOG MANAGEMENT</span>
+            <h1>Brands</h1>
+            <p>
+                Manage tyre brands available in Shri Krishna Tyre House inventory.
+            </p>
+        </div>
+
+        <div class="admin-page-actions">
+
+            <button class="admin-primary-button">
+                + Add Brand
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="brand-admin-stats">
+
+        <div class="brand-admin-stat">
+            <span class="brand-admin-stat-icon">BR</span>
+            <div>
+                <strong>6</strong>
+                <small>Total Brands</small>
+            </div>
+        </div>
+
+        <div class="brand-admin-stat">
+            <span class="brand-admin-stat-icon">AC</span>
+            <div>
+                <strong>6</strong>
+                <small>Active Brands</small>
+            </div>
+        </div>
+
+        <div class="brand-admin-stat">
+            <span class="brand-admin-stat-icon">TY</span>
+            <div>
+                <strong>42</strong>
+                <small>Total Tyres</small>
+            </div>
+        </div>
+
+        <div class="brand-admin-stat">
+            <span class="brand-admin-stat-icon">ST</span>
+            <div>
+                <strong>5</strong>
+                <small>Top Brands</small>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="admin-panel">
+
+        <div class="admin-panel-header">
+
+            <div>
+                <h2>Brand Directory</h2>
+                <p>All tyre brands currently configured in the system.</p>
+            </div>
+
+        </div>
+
+
+        <div class="brand-admin-toolbar">
+
+            <div class="admin-search">
+
+                <span>SEARCH</span>
+
+                <input
+                    type="text"
+                    id="brandSearch"
+                    placeholder="Search brand..."
+                >
+
+            </div>
+
+
+            <select id="brandStatusFilter">
+
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+
+            </select>
+
+
+            <select id="brandSort">
+
+                <option value="name">Sort by Name</option>
+                <option value="tyres">Sort by Tyres</option>
+                <option value="status">Sort by Status</option>
+
+            </select>
+
+        </div>
+
+
+        <div class="brand-admin-table-wrapper">
+
+            <table class="brand-admin-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Brand</th>
+                        <th>Code</th>
+                        <th>Tyres</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Added</th>
+                        <th>Actions</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    <tr>
+
+                        <td>
+
+                            <div class="brand-table-name">
+
+                                <div class="brand-logo-box">
+                                    MRF
+                                </div>
+
+                                <div>
+                                    <strong>MRF</strong>
+                                    <small>Madras Rubber Factory</small>
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                        <td>BR-001</td>
+
+                        <td>
+                            <strong>12</strong>
+                        </td>
+
+                        <td>Passenger / SUV</td>
+
+                        <td>
+                            <span class="brand-status brand-active">
+                                Active
+                            </span>
+                        </td>
+
+                        <td>01 Jan 2026</td>
+
+                        <td>
+
+                            <div class="brand-table-actions">
+
+                                <button class="brand-action edit">
+                                    Edit
+                                </button>
+
+                                <button class="brand-action delete">
+                                    Delete
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>
+
+                            <div class="brand-table-name">
+
+                                <div class="brand-logo-box">
+                                    CEAT
+                                </div>
+
+                                <div>
+                                    <strong>CEAT</strong>
+                                    <small>CEAT Tyres</small>
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                        <td>BR-002</td>
+
+                        <td>
+                            <strong>8</strong>
+                        </td>
+
+                        <td>Passenger / Commercial</td>
+
+                        <td>
+                            <span class="brand-status brand-active">
+                                Active
+                            </span>
+                        </td>
+
+                        <td>03 Jan 2026</td>
+
+                        <td>
+
+                            <div class="brand-table-actions">
+
+                                <button class="brand-action edit">
+                                    Edit
+                                </button>
+
+                                <button class="brand-action delete">
+                                    Delete
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>
+
+                            <div class="brand-table-name">
+
+                                <div class="brand-logo-box">
+                                    AP
+                                </div>
+
+                                <div>
+                                    <strong>Apollo</strong>
+                                    <small>Apollo Tyres</small>
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                        <td>BR-003</td>
+
+                        <td>
+                            <strong>7</strong>
+                        </td>
+
+                        <td>Passenger / SUV</td>
+
+                        <td>
+                            <span class="brand-status brand-active">
+                                Active
+                            </span>
+                        </td>
+
+                        <td>05 Jan 2026</td>
+
+                        <td>
+
+                            <div class="brand-table-actions">
+
+                                <button class="brand-action edit">
+                                    Edit
+                                </button>
+
+                                <button class="brand-action delete">
+                                    Delete
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>
+
+                            <div class="brand-table-name">
+
+                                <div class="brand-logo-box">
+                                    JK
+                                </div>
+
+                                <div>
+                                    <strong>JK Tyre</strong>
+                                    <small>JK Tyre & Industries</small>
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                        <td>BR-004</td>
+
+                        <td>
+                            <strong>6</strong>
+                        </td>
+
+                        <td>Passenger / SUV</td>
+
+                        <td>
+                            <span class="brand-status brand-active">
+                                Active
+                            </span>
+                        </td>
+
+                        <td>08 Jan 2026</td>
+
+                        <td>
+
+                            <div class="brand-table-actions">
+
+                                <button class="brand-action edit">
+                                    Edit
+                                </button>
+
+                                <button class="brand-action delete">
+                                    Delete
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>
+
+                            <div class="brand-table-name">
+
+                                <div class="brand-logo-box">
+                                    MI
+                                </div>
+
+                                <div>
+                                    <strong>Michelin</strong>
+                                    <small>Michelin Tyres</small>
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                        <td>BR-005</td>
+
+                        <td>
+                            <strong>5</strong>
+                        </td>
+
+                        <td>Passenger / Motorcycle</td>
+
+                        <td>
+                            <span class="brand-status brand-active">
+                                Active
+                            </span>
+                        </td>
+
+                        <td>12 Jan 2026</td>
+
+                        <td>
+
+                            <div class="brand-table-actions">
+
+                                <button class="brand-action edit">
+                                    Edit
+                                </button>
+
+                                <button class="brand-action delete">
+                                    Delete
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>
+
+                            <div class="brand-table-name">
+
+                                <div class="brand-logo-box">
+                                    BS
+                                </div>
+
+                                <div>
+                                    <strong>Bridgestone</strong>
+                                    <small>Bridgestone Tyres</small>
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                        <td>BR-006</td>
+
+                        <td>
+                            <strong>4</strong>
+                        </td>
+
+                        <td>Passenger / SUV</td>
+
+                        <td>
+                            <span class="brand-status brand-active">
+                                Active
+                            </span>
+                        </td>
+
+                        <td>15 Jan 2026</td>
+
+                        <td>
+
+                            <div class="brand-table-actions">
+
+                                <button class="brand-action edit">
+                                    Edit
+                                </button>
+
+                                <button class="brand-action delete">
+                                    Delete
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <div class="brand-admin-footer">
+
+            <span>
+                Showing 6 of 6 brands
+            </span>
+
+            <div class="brand-pagination">
+
+                <button disabled>
+                    Previous
+                </button>
+
+                <button class="current">
+                    1
+                </button>
+
+                <button disabled>
+                    Next
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+"#;
+
+    Html(admin_page("Brands", content))
+}

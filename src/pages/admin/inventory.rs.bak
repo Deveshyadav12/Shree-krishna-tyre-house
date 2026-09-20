@@ -1,0 +1,457 @@
+﻿use axum::{
+    extract::{Form, Path, State},
+    response::{Html, Redirect},
+};
+use serde::Deserialize;
+
+use crate::AppState;
+
+#[derive(Deserialize)]
+pub struct StockForm {
+    pub quantity: i32,
+    pub movement_type: String,
+    pub notes: String,
+}
+
+#[derive(Deserialize)]
+pub struct InventoryForm {
+    pub name: String,
+    pub brand: String,
+    pub size: String,
+    pub tyre_type: String,
+    pub price: i64,
+    pub stock: i32,
+    pub low_stock_limit: i32,
+}
+
+pub async fn inventory(State(state): State<AppState>) -> Html<String> {
+    let rows = sqlx::query(r#"
+        SELECT id, name, brand, size, tyre_type, price, stock, low_stock_limit
+        FROM inventory
+        ORDER BY created_at DESC
+        "#
+    )
+    .fetch_all(&state.pool)
+    .await
+    .unwrap_or_default();
+
+    let mut html = String::from(
+        r#"
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Tyre Inventory</title>
+            <link rel="stylesheet" href="/assets/css/admin.css">
+        </head>
+        <body>
+        <div class="admin-page">
+        <main class="admin-main">
+        <div class="page-header">
+            <div>
+                <h1>Tyre Inventory</h1>
+                <p>Manage tyres and stock levels.</p>
+            </div>
+            <a class="btn btn-primary" href="/admin/inventory/new">Add Tyre</a>
+        </div>
+
+        <div class="panel">
+        <div class="table-wrap">
+        <table>
+        <thead>
+        <tr>
+            <th>Tyre</th>
+            <th>Brand</th>
+            <th>Size</th>
+            <th>Type</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        "#,
+    );
+
+    for item in rows {
+        let stock_class = if item.stock <= item.low_stock_limit {
+            "stock-low"
+        } else {
+            "stock-ok"
+        };
+
+        html.push_str(&format!(
+            r#"
+            <tr>
+                <td><strong>{}</strong><br><small>{}</small></td>
+                <td>{}</td>
+                <td>{}</td>
+                <td>{}</td>
+                <td>Rs. {}</td>
+                <td><span class="{}">{}</span></td>
+                <td>
+                    <a href="/admin/inventory/{}">View</a>
+                    &nbsp;|&nbsp;
+                    <a href="/admin/inventory/{}/edit">Edit</a>
+                </td>
+            </tr>
+            "#,
+            item.name,
+            item.id,
+            item.brand,
+            item.size,
+            item.tyre_type,
+            item.price,
+            stock_class,
+            item.stock,
+            item.id,
+            item.id
+        ));
+    }
+
+    html.push_str(
+        r#"
+        </tbody>
+        </table>
+        </div>
+        </div>
+        </main>
+        </div>
+        </body>
+        </html>
+        "#,
+    );
+
+    Html(html)
+}
+
+pub async fn inventory_detail(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> Html<String> {
+    let item = sqlx::query(
+        r#"
+        SELECT id, name, brand, size, tyre_type, price, stock, low_stock_limit
+        FROM inventory
+        WHERE id = $1
+        "#).bind(&id)
+    .fetch_optional(&state.pool)
+    .await
+    .ok()
+    .flatten();
+
+    let Some(item) = item else {
+        return Html("<h1>Inventory item not found</h1>".to_string());
+    };
+
+    let value = item.price * item.stock as i64;
+
+    Html(format!(
+        r#"
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>{} - Inventory</title>
+            <link rel="stylesheet" href="/assets/css/admin.css">
+        </head>
+        <body>
+        <div class="admin-page">
+        <main class="admin-main">
+            <div class="page-header">
+                <div>
+                    <h1>{}</h1>
+                    <p>{}</p>
+                </div>
+                <div>
+                    <a class="btn" href="/admin/inventory">Back</a>
+                    <a class="btn btn-primary" href="/admin/inventory/{}/edit">Edit</a>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Tyre Information</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span>Brand</span>
+                        <strong>{}</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Size</span>
+                        <strong>{}</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Type</span>
+                        <strong>{}</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Price</span>
+                        <strong>Rs. {}</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Stock</span>
+                        <strong>{}</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Inventory Value</span>
+                        <strong>Rs. {}</strong>
+                    </div>
+                </div>
+
+                <hr>
+
+                <h2>Adjust Stock</h2>
+
+                <form method="post" action="/admin/inventory/{}/adjust" class="form-grid">
+                    <div>
+                        <label>Quantity</label>
+                        <input type="number" name="quantity" value="1" min="1" required>
+                    </div>
+
+                    <div>
+                        <label>Movement</label>
+                        <select name="movement_type">
+                            <option value="STOCK_IN">Stock In</option>
+                            <option value="STOCK_OUT">Stock Out</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label>Notes</label>
+                        <input type="text" name="notes" placeholder="Reason">
+                    </div>
+
+                    <div>
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary" type="submit">Update Stock</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+        </div>
+        </body>
+        </html>
+        "#,
+        item.name,
+        item.name,
+        item.id,
+        item.id,
+        item.brand,
+        item.size,
+        item.tyre_type,
+        item.price,
+        item.stock,
+        value,
+        item.id
+    ))
+}
+
+pub async fn inventory_edit(State(state): State<AppState>, Path(id): Path<String>) -> Html<String> {
+    let item = sqlx::query(r#"
+        SELECT id, name, brand, size, tyre_type, price, stock, low_stock_limit
+        FROM inventory
+        WHERE id = $1
+        "#).bind(&id)
+    .fetch_optional(&state.pool)
+    .await
+    .ok()
+    .flatten();
+
+    let Some(item) = item else {
+        return Html("<h1>Inventory item not found</h1>".to_string());
+    };
+
+    Html(format!(
+        r#"
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Edit Inventory</title>
+            <link rel="stylesheet" href="/assets/css/admin.css">
+        </head>
+        <body>
+        <div class="admin-page">
+        <main class="admin-main">
+
+        <div class="page-header">
+            <div>
+                <h1>Edit Tyre</h1>
+                <p>Update inventory information.</p>
+            </div>
+        </div>
+
+        <div class="panel">
+        <form method="post" action="/admin/inventory/{}/edit">
+
+            <div class="form-grid">
+
+                <div>
+                    <label>Tyre Name</label>
+                    <input name="name" value="{}" required>
+                </div>
+
+                <div>
+                    <label>Brand</label>
+                    <input name="brand" value="{}" required>
+                </div>
+
+                <div>
+                    <label>Size</label>
+                    <input name="size" value="{}" required>
+                </div>
+
+                <div>
+                    <label>Tyre Type</label>
+                    <input name="tyre_type" value="{}" required>
+                </div>
+
+                <div>
+                    <label>Price</label>
+                    <input type="number" name="price" value="{}" min="0" required>
+                </div>
+
+                <div>
+                    <label>Stock</label>
+                    <input type="number" name="stock" value="{}" min="0" required>
+                </div>
+
+                <div>
+                    <label>Low Stock Limit</label>
+                    <input type="number" name="low_stock_limit" value="{}" min="0" required>
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+                <a class="btn" href="/admin/inventory/{}">Cancel</a>
+                <button class="btn btn-primary" type="submit">Save Changes</button>
+            </div>
+
+        </form>
+        </div>
+
+        </main>
+        </div>
+        </body>
+        </html>
+        "#,
+        item.id,
+        item.name,
+        item.brand,
+        item.size,
+        item.tyre_type,
+        item.price,
+        item.stock,
+        item.low_stock_limit,
+        item.id
+    ))
+}
+
+pub async fn update_inventory(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    Form(form): Form<InventoryForm>,
+) -> Redirect {
+    let _ = sqlx::query(r#"
+        UPDATE inventory
+        SET name = $1,
+            brand = $2,
+            size = $3,
+            tyre_type = $4,
+            price = $5,
+            stock = $6,
+            low_stock_limit = $7
+        WHERE id = $8
+        "#,
+        form.name,
+        form.brand,
+        form.size,
+        form.tyre_type,
+        form.price,
+        form.stock,
+        form.low_stock_limit,
+        id
+    )
+    .execute(&state.pool)
+    .await;
+
+    Redirect::to("/admin/inventory")
+}
+
+pub async fn adjust_stock(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    Form(form): Form<StockForm>,
+) -> Redirect {
+    let mut tx = match state.pool.begin().await {
+        Ok(tx) => tx,
+        Err(_) => return Redirect::to("/admin/inventory"),
+    };
+
+    let item = match sqlx::query(
+        r#"
+        SELECT name, stock
+        FROM inventory
+        WHERE id = $1
+        FOR UPDATE
+        "#).bind(&id)
+    .fetch_optional(&mut *tx)
+    .await
+    {
+        Ok(Some(item)) => item,
+        _ => return Redirect::to("/admin/inventory"),
+    };
+
+    let stock_before = item.stock;
+
+    let stock_after = if form.movement_type == "STOCK_OUT" {
+        stock_before - form.quantity
+    } else {
+        stock_before + form.quantity
+    };
+
+    if stock_after < 0 {
+        return Redirect::to(&format!("/admin/inventory/{}", id));
+    }
+
+    let _ = sqlx::query(
+        r#"
+        UPDATE inventory
+        SET stock = $1
+        WHERE id = $2
+        "#,
+        stock_after,
+        id
+    )
+    .execute(&mut *tx)
+    .await;
+
+    let movement_id = format!("STK-{}", chrono::Utc::now().timestamp_millis());
+
+    let _ = sqlx::query(
+        r#"
+        INSERT INTO stock_movements
+        (id, tyre_id, tyre_name, movement_type, quantity,
+         stock_before, stock_after, reference, notes)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        "#,
+        movement_id,
+        id,
+        item.name,
+        form.movement_type,
+        form.quantity,
+        stock_before,
+        stock_after,
+        "",
+        form.notes
+    )
+    .execute(&mut *tx)
+    .await;
+
+    let _ = tx.commit().await;
+
+    Redirect::to(&format!("/admin/inventory/{}", id))
+}
+
+
+
+

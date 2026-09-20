@@ -1,0 +1,360 @@
+use axum::{extract::Path, response::Html};
+
+use super::{customer_store::customer_store, layout::admin_page};
+
+pub async fn customers() -> Html<String> {
+    let customers = customer_store().lock().unwrap().clone();
+
+    let total = customers.len();
+
+    let mut rows = String::new();
+
+    for customer in customers.iter().rev() {
+        rows.push_str(&format!(
+            r#"
+<tr>
+
+    <td>
+        <a
+            href="/admin/customers/{id}"
+            class="customer-id-link"
+        >
+            {id}
+        </a>
+    </td>
+
+    <td>
+        <div class="job-customer-cell">
+            <strong>{name}</strong>
+            <small>{phone}</small>
+        </div>
+    </td>
+
+    <td>
+        <div class="job-customer-cell">
+            <strong>{vehicle}</strong>
+            <small>{registration}</small>
+        </div>
+    </td>
+
+    <td>
+        {email}
+    </td>
+
+    <td>
+        {address}
+    </td>
+
+    <td>
+        <a
+            href="/admin/customers/{id}"
+            class="job-view-button"
+        >
+            View
+        </a>
+    </td>
+
+</tr>
+"#,
+            id = customer.id,
+            name = customer.name,
+            phone = customer.phone,
+            vehicle = customer.vehicle,
+            registration = customer.registration,
+            email = customer.email,
+            address = customer.address,
+        ));
+    }
+
+    let content = format!(
+        r#"
+<div class="admin-page-header">
+
+    <div>
+
+        <div class="admin-eyebrow">
+            MAIN
+        </div>
+
+        <h1>Customers</h1>
+
+        <p>
+            Manage customer information and vehicles.
+        </p>
+
+    </div>
+
+    <a
+        href="/admin/customers/new"
+        class="admin-primary-button"
+    >
+        + Add Customer
+    </a>
+
+</div>
+
+
+<div class="customer-stat-grid">
+
+    <div class="customer-stat-card">
+
+        <span>
+            Total Customers
+        </span>
+
+        <strong>
+            {total}
+        </strong>
+
+    </div>
+
+    <div class="customer-stat-card">
+
+        <span>
+            Vehicles
+        </span>
+
+        <strong>
+            {total}
+        </strong>
+
+    </div>
+
+</div>
+
+
+<div class="admin-panel">
+
+    <div class="job-admin-toolbar">
+
+        <input
+            type="search"
+            class="admin-search-input"
+            placeholder="Search name, phone, vehicle or registration..."
+        >
+
+    </div>
+
+
+    <div class="job-admin-table-wrap">
+
+        <table class="job-admin-table">
+
+            <thead>
+
+                <tr>
+                    <th>Customer ID</th>
+                    <th>Customer</th>
+                    <th>Vehicle</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Action</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+                {rows}
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+"#,
+        total = total,
+        rows = rows,
+    );
+
+    Html(admin_page("Customers", &content))
+}
+
+pub async fn customer_detail(Path(id): Path<String>) -> Html<String> {
+    let customer = {
+        let customers = customer_store().lock().unwrap();
+
+        customers.iter().find(|customer| customer.id == id).cloned()
+    };
+
+    let Some(customer) = customer else {
+        return Html(admin_page(
+            "Customers",
+            r#"
+<div class="admin-page-header">
+
+    <div>
+
+        <div class="admin-eyebrow">
+            CUSTOMER
+        </div>
+
+        <h1>Customer Not Found</h1>
+
+    </div>
+
+</div>
+
+<div class="admin-panel">
+
+    <a
+        href="/admin/customers"
+        class="admin-secondary-button"
+    >
+        Back to Customers
+    </a>
+
+</div>
+"#,
+        ));
+    };
+
+    let content = format!(
+        r#"
+<div class="admin-page-header">
+
+    <div>
+
+        <div class="admin-eyebrow">
+            CUSTOMER
+        </div>
+
+        <h1>{name}</h1>
+
+        <p>
+            Customer ID: {id}
+        </p>
+
+    </div>
+
+    <a
+        href="/admin/customers"
+        class="admin-secondary-button"
+    >
+        Back to Customers
+    </a>
+
+</div>
+
+
+<div class="customer-detail-grid">
+
+    <div>
+
+        <div class="admin-panel">
+
+            <div class="admin-panel-header">
+
+                <div>
+                    <h2>Customer Information</h2>
+                    <p>Basic customer contact information.</p>
+                </div>
+
+            </div>
+
+
+            <div class="customer-info-grid">
+
+                <div>
+                    <span>Name</span>
+                    <strong>{name}</strong>
+                </div>
+
+                <div>
+                    <span>Phone</span>
+                    <strong>{phone}</strong>
+                </div>
+
+                <div>
+                    <span>Email</span>
+                    <strong>{email}</strong>
+                </div>
+
+                <div>
+                    <span>Address</span>
+                    <strong>{address}</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="admin-panel">
+
+            <div class="admin-panel-header">
+
+                <div>
+                    <h2>Vehicle</h2>
+                    <p>Vehicle currently registered to this customer.</p>
+                </div>
+
+            </div>
+
+
+            <div class="customer-vehicle-card">
+
+                <div class="customer-vehicle-icon">
+                    VH
+                </div>
+
+                <div>
+
+                    <strong>
+                        {vehicle}
+                    </strong>
+
+                    <span>
+                        {registration}
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <aside>
+
+        <div class="customer-profile-card">
+
+            <div class="customer-profile-avatar">
+                {initial}
+            </div>
+
+            <strong>
+                {name}
+            </strong>
+
+            <span>
+                {phone}
+            </span>
+
+            <a
+                href="/admin/jobs/new"
+                class="admin-primary-button"
+            >
+                Create Job
+            </a>
+
+        </div>
+
+    </aside>
+
+</div>
+"#,
+        id = customer.id,
+        name = customer.name,
+        phone = customer.phone,
+        email = customer.email,
+        address = customer.address,
+        vehicle = customer.vehicle,
+        registration = customer.registration,
+        initial = customer.name.chars().next().unwrap_or('C'),
+    );
+
+    Html(admin_page("Customers", &content))
+}

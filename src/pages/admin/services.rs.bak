@@ -1,0 +1,558 @@
+use axum::response::Html;
+
+pub async fn services() -> Html<String> {
+    let services = vec![
+        (
+            "SRV-001",
+            "Wheel Alignment",
+            "Wheel & Suspension",
+            "₹500",
+            "Active",
+        ),
+        (
+            "SRV-002",
+            "Wheel Balancing",
+            "Wheel & Suspension",
+            "₹400",
+            "Active",
+        ),
+        (
+            "SRV-003",
+            "Tyre Replacement",
+            "Tyre Service",
+            "₹250",
+            "Active",
+        ),
+        (
+            "SRV-004",
+            "Puncture Repair",
+            "Tyre Service",
+            "₹100",
+            "Active",
+        ),
+        ("SRV-005", "Tyre Rotation", "Tyre Service", "₹300", "Active"),
+        (
+            "SRV-006",
+            "Tubeless Repair",
+            "Tyre Service",
+            "₹150",
+            "Active",
+        ),
+        (
+            "SRV-007",
+            "Nitrogen Inflation",
+            "Tyre Care",
+            "₹200",
+            "Active",
+        ),
+        (
+            "SRV-008",
+            "Wheel Care",
+            "Wheel & Suspension",
+            "₹350",
+            "Active",
+        ),
+    ];
+
+    let mut rows = String::new();
+
+    for (id, name, category, price, status) in services {
+        rows.push_str(&format!(
+            r#"
+            <tr>
+
+                <td>
+                    <span class="table-id">
+                        {id}
+                    </span>
+                </td>
+
+                <td>
+                    <div class="service-table-name">
+
+                        <div class="service-mini-icon">
+                            SV
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                {name}
+                            </strong>
+
+                            <small>
+                                Professional service
+                            </small>
+
+                        </div>
+
+                    </div>
+                </td>
+
+                <td>
+                    <span class="category-badge">
+                        {category}
+                    </span>
+                </td>
+
+                <td>
+                    <strong>
+                        {price}
+                    </strong>
+                </td>
+
+                <td>
+                    <span class="service-status">
+                        ● {status}
+                    </span>
+                </td>
+
+                <td>
+
+                    <div class="table-actions">
+
+                        <a href="/admin/services/edit/{id}">
+                            Edit
+                        </a>
+
+                        <button type="button">
+                            Delete
+                        </button>
+
+                    </div>
+
+                </td>
+
+            </tr>
+            "#
+        ));
+    }
+
+    let html = format!(
+        r#"
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Services | Shri Krishna Tyre House
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="/assets/css/admin.css"
+    >
+
+</head>
+
+
+<body class="admin-body">
+
+
+    <aside class="admin-sidebar">
+
+        <div class="admin-brand">
+
+            <div class="admin-logo-mark">
+                SK
+            </div>
+
+            <div>
+
+                <strong>
+                    SHRI KRISHNA
+                </strong>
+
+                <small>
+                    TYRE HOUSE
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="sidebar-section">
+
+            <span>
+                MAIN
+            </span>
+
+            <a
+                href="/admin"
+                class="admin-nav-link"
+            >
+                <b>01</b>
+                Dashboard
+            </a>
+
+            <a
+                href="/admin/inventory"
+                class="admin-nav-link"
+            >
+                <b>02</b>
+                Tyre Inventory
+            </a>
+
+            <a
+                href="/admin/services"
+                class="admin-nav-link active"
+            >
+                <b>03</b>
+                Services
+            </a>
+
+            <a
+                href="/admin/brands"
+                class="admin-nav-link"
+            >
+                <b>04</b>
+                Brands
+            </a>
+
+        </div>
+
+
+        <div class="sidebar-section">
+
+            <span>
+                BUSINESS
+            </span>
+
+            <a
+                href="/admin/customers"
+                class="admin-nav-link"
+            >
+                <b>05</b>
+                Customers
+            </a>
+
+            <a
+                href="/admin/jobs"
+                class="admin-nav-link"
+            >
+                <b>06</b>
+                Job Orders
+            </a>
+
+            <a
+                href="/admin/billing"
+                class="admin-nav-link"
+            >
+                <b>07</b>
+                Billing
+            </a>
+
+            <a
+                href="/admin/invoices"
+                class="admin-nav-link"
+            >
+                <b>08</b>
+                Invoices
+            </a>
+
+        </div>
+
+
+        <div class="sidebar-bottom">
+
+            <a
+                href="/"
+                class="sidebar-bottom-link"
+            >
+                View Website
+            </a>
+
+            <a
+                href="/admin/login"
+                class="sidebar-bottom-link logout"
+            >
+                Logout
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <main class="admin-main">
+
+
+        <header class="admin-topbar">
+
+            <div>
+
+                <span class="admin-breadcrumb">
+                    ADMIN / SERVICES
+                </span>
+
+                <h2>
+                    Services
+                </h2>
+
+            </div>
+
+
+            <div class="admin-online">
+
+                <span class="online-dot"></span>
+
+                ONLINE
+
+            </div>
+
+        </header>
+
+
+        <section class="admin-content">
+
+
+            <div class="admin-page-heading">
+
+                <div>
+
+                    <span>
+                        SERVICE MANAGEMENT
+                    </span>
+
+                    <h1>
+                        Services
+                    </h1>
+
+                    <p>
+                        Manage tyre and wheel services,
+                        categories and pricing.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="admin-primary-button"
+                >
+                    + Add Service
+                </button>
+
+            </div>
+
+
+            <div class="inventory-stats">
+
+
+                <div class="inventory-stat">
+
+                    <span>
+                        TOTAL SERVICES
+                    </span>
+
+                    <strong>
+                        8
+                    </strong>
+
+                    <small>
+                        Service types
+                    </small>
+
+                </div>
+
+
+                <div class="inventory-stat">
+
+                    <span>
+                        ACTIVE
+                    </span>
+
+                    <strong>
+                        8
+                    </strong>
+
+                    <small>
+                        Currently available
+                    </small>
+
+                </div>
+
+
+                <div class="inventory-stat">
+
+                    <span>
+                        CATEGORIES
+                    </span>
+
+                    <strong>
+                        3
+                    </strong>
+
+                    <small>
+                        Service categories
+                    </small>
+
+                </div>
+
+
+                <div class="inventory-stat">
+
+                    <span>
+                        AVERAGE PRICE
+                    </span>
+
+                    <strong>
+                        ₹269
+                    </strong>
+
+                    <small>
+                        Across services
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <section class="admin-panel inventory-panel">
+
+
+                <div class="inventory-toolbar">
+
+                    <div class="inventory-search">
+
+                        <input
+                            type="search"
+                            placeholder="Search services..."
+                        >
+
+                    </div>
+
+
+                    <select>
+
+                        <option>
+                            All Categories
+                        </option>
+
+                        <option>
+                            Tyre Service
+                        </option>
+
+                        <option>
+                            Wheel & Suspension
+                        </option>
+
+                        <option>
+                            Tyre Care
+                        </option>
+
+                    </select>
+
+
+                    <select>
+
+                        <option>
+                            All Status
+                        </option>
+
+                        <option>
+                            Active
+                        </option>
+
+                        <option>
+                            Inactive
+                        </option>
+
+                    </select>
+
+
+                    <div></div>
+
+                </div>
+
+
+                <div class="admin-table-wrapper">
+
+                    <table class="admin-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    ID
+                                </th>
+
+                                <th>
+                                    SERVICE
+                                </th>
+
+                                <th>
+                                    CATEGORY
+                                </th>
+
+                                <th>
+                                    PRICE
+                                </th>
+
+                                <th>
+                                    STATUS
+                                </th>
+
+                                <th>
+                                    ACTIONS
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <div class="inventory-pagination">
+
+                    <span>
+                        Showing 1–8 of 8 services
+                    </span>
+
+                    <div>
+
+                        <button class="page-active">
+                            1
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+
+</body>
+
+</html>
+"#,
+        rows
+    );
+
+    Html(html)
+}
