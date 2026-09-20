@@ -1,28 +1,14 @@
 [package]
 name = "krishna-tyre-house"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
-
 axum = "0.8"
-
-tokio = {
-    version = "1",
-    features = ["full"]
-}
-
-serde = {
-    version = "1",
-    features = ["derive"]
-}
-
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-
-tower-http = {
-    version = "0.6",
-    features = ["fs"]
-}
+tower-http = { version = "0.6", features = ["fs"] }
 sqlx = { version = "0.8.6", features = ["runtime-tokio", "tls-native-tls", "postgres", "migrate", "derive", "json"] }
 dotenvy = "0.15.7"
 chrono = "0.4.45"
